@@ -78,3 +78,7 @@ Each user has personalized chat threads, facilitating:
 
 - **Internet Search Capability:**  
   Augments internal knowledge base results with real-time information sourced directly from the internet. This ensures users receive the most current and relevant answers, even when the internal content may be outdated or incomplete.
+
+- **MCP server based sourcing:**
+  Sourcing content from differenct data sources using a standard interface based on MCP  
+
