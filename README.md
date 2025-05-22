@@ -26,9 +26,6 @@ Import documents from websites (via scraping), Google Drive, Dropbox, or your lo
 **Metadata Enrichment:**  
 Once sourced, content is enriched with metadata, validated, and approved before being added to a catalog.
 
-**Dynamic Topic Management:**  
-The catalog supports the addition and modification of topics to better organize the content.
-
 ---
 
 ### 3. Knowledge Base Creation
