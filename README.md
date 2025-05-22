@@ -51,9 +51,7 @@ Retrieved documents are processed by the LLM alongside the query to generate pre
 ---
 
 ### 5. Conversational AI
-
-**Contextual Memory:**  
-SmartKB maintains chat history, allowing users to ask follow-up questions without re-entering full context.  
+Engine maintains chat history, allowing users to ask follow-up questions without re-entering full context.  
 The LLM reconstructs queries using historical data to ensure accurate document retrieval.
 
 ---
@@ -64,15 +62,12 @@ The LLM reconstructs queries using historical data to ensure accurate document r
 Each user has personalized chat threads, facilitating:
 - Easy access to past interactions
 - The ability to delete threads as needed
+- Search specific content from history
+- Recommend question based on user's past interaction and question or as a following in the current session.
 
 ---
 
-- **Recommended Questions:**  
-  Automatically generates intelligent, contextually relevant follow-up or related questions based on the current document or user query. This helps users explore content more effectively and discover insights they might not have thought to search for.
-
-- **Context-Aware Chunking:**  
-  Leverages advanced parsing techniques to segment documents not just by page or length, but by semantic context—ensuring each chunk captures a coherent idea or topic. This improves the quality of metadata extraction, embedding generation, and ultimately, search accuracy.
-
+### 7. Up coming features
 - **Support for Document Images:**  
   Enables extraction and indexing of content from embedded images (e.g., charts, scanned documents, or infographics) within uploaded files. This extends the knowledge base to include visual data, making the system more comprehensive and accessible.
 
