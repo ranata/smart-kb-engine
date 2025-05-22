@@ -6,6 +6,14 @@
 
 ## Key Features
 
+### 0. Topics Management
+
+**Dynamic Topic Management:**
+Administrators can effortlessly create, modify, or delete topics, ensuring that content is always organized within the most relevant categories. New content is systematically uploaded to one or more topics, maintaining a structured repository that evolves with the organization.
+
+**Controlled Access and Permissions:**
+Access to topics and the corresponding content is secured through a robust access control management system. This system governs who can view or modify topics and content, ensuring that sensitive information remains protected while allowing collaboration among authorized users.
+
 ### 1. Content Sourcing
 
 **Multi-Source Integration:**  
