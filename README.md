@@ -1,6 +1,6 @@
 # SmartKBEngine Overview
 
-**SmartKBEngine** is a comprehensive solution for sourcing, managing, and cataloging content while building a robust knowledge base through semantic search and retrieval. The product organizes content by topics and allows access restrictions based on predefined groups and users.
+**SmartKBEngine** is a comprehensive solution for sourcing, managing, and cataloging content to build a robust knowledgebase thats supports semantic search and retrieval of information. The product organizes content by topics and allows access restrictions based on predefined groups and users.
 
 ---
 
