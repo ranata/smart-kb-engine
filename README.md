@@ -1,2 +1,80 @@
-# smart-kb-engine
-A Python-based knowledge base platform that enables content upload, automatic knowledge structuring, and semantic search using LLMs. Ideal for building intelligent, searchable knowledge systems.
+# SmartKBEngine Overview
+
+**SmartKBEngine** is a comprehensive solution for sourcing, managing, and cataloging content while building a robust knowledge base through semantic search and retrieval. The product organizes content by topics and allows access restrictions based on predefined groups and users.
+
+---
+
+## Key Features
+
+### 1. Content Sourcing
+
+**Multi-Source Integration:**  
+Import documents from websites (via scraping), Google Drive, Dropbox, or your local machine.
+
+---
+
+### 2. Cataloging
+
+**Metadata Enrichment:**  
+Once sourced, content is enriched with metadata, validated, and approved before being added to a catalog.
+
+**Dynamic Topic Management:**  
+The catalog supports the addition and modification of topics to better organize the content.
+
+---
+
+### 3. Knowledge Base Creation
+
+This process is divided into three key stages:
+
+#### Parsing & Chunking
+- Documents are split into logical nodes and converted into markdown.
+- Currently, page-level chunking is supported via **LlamaParse**, with potential expansion to include parsers like **Docling**.
+
+#### Metadata Extraction
+Each markdown page is processed by a lightweight LLM to extract essential metadata, including:
+- A summary of the page content
+- Topics covered on the page
+- Types of questions the page can answer
+
+#### Embedding Creation
+- An embedding is generated for each page, incorporating the rich metadata extracted by the LLM.
+
+---
+
+### 4. Search & Retrieval
+
+**Advanced Retrieval Techniques:**  
+The knowledge base supports both **semantic** and **hybrid search**, enabling fine-grained document retrieval based on user queries.  
+Retrieved documents are processed by the LLM alongside the query to generate precise answers.
+
+---
+
+### 5. Conversational AI
+
+**Contextual Memory:**  
+SmartKB maintains chat history, allowing users to ask follow-up questions without re-entering full context.  
+The LLM reconstructs queries using historical data to ensure accurate document retrieval.
+
+---
+
+### 6. Chat Threads
+
+**Personalized Experience:**  
+Each user has personalized chat threads, facilitating:
+- Easy access to past interactions
+- The ability to delete threads as needed
+
+---
+
+- **Recommended Questions:**  
+  Automatically generates intelligent, contextually relevant follow-up or related questions based on the current document or user query. This helps users explore content more effectively and discover insights they might not have thought to search for.
+
+- **Context-Aware Chunking:**  
+  Leverages advanced parsing techniques to segment documents not just by page or length, but by semantic context—ensuring each chunk captures a coherent idea or topic. This improves the quality of metadata extraction, embedding generation, and ultimately, search accuracy.
+
+- **Support for Document Images:**  
+  Enables extraction and indexing of content from embedded images (e.g., charts, scanned documents, or infographics) within uploaded files. This extends the knowledge base to include visual data, making the system more comprehensive and accessible.
+
+- **Internet Search Capability:**  
+  Augments internal knowledge base results with real-time information sourced directly from the internet. This ensures users receive the most current and relevant answers, even when the internal content may be outdated or incomplete.
