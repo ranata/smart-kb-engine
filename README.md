@@ -28,7 +28,7 @@ Once sourced, content is enriched with metadata, validated, and approved before 
 
 ---
 
-### 3. Knowledge Base Creation
+### 3. KnowledgeBase Creation
 
 This process is divided into three key stages:
 
