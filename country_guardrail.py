@@ -7,6 +7,18 @@ from presidio_analyzer import AnalyzerEngine
 from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import OperatorConfig
 
+import csv
+
+def load_demonym_map_from_csv(path="country_demonyms.csv"):
+    demonym_map = {}
+    with open(path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            demonym_map[row["demonym"].strip().lower()] = row["country"].strip()
+    return demonym_map
+
+DEMONYM_MAP = load_demonym_map_from_csv()
+
 
 # ============================================================
 # ✅ LOAD BEST AVAILABLE SPACY MODEL (LG PREFERRED)
