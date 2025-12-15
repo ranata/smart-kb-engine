@@ -1,0 +1,198 @@
+text,masked_ground_truth
+Fatima works at Microsoft and uses credit card 3400 000000 00009.,Fatima works at Microsoft and uses credit card <MASKED>.
+Priya is traveling from USA to India. Call +1-202-555-0175.,<MASKED> is traveling from USA to India. Call <MASKED>.
+Email alice@mail.com to contact Priya.,Email <MASKED> to contact <MASKED>.
+The SSN for John is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
+Carlos lives at Downtown Dubai, UAE and can be reached at +1-202-555-0138.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Meeting scheduled with OpenAI representative Wei Lee.,Meeting scheduled with OpenAI representative <MASKED>.
+Bob works at Google and uses credit card 5500 0000 0000 0004.,<MASKED> works at Google and uses credit card <MASKED>.
+Email user@domain.com to contact Alice.,Email <MASKED> to contact <MASKED>.
+Priya lives at MG Road, Bangalore, India and can be reached at +1-202-555-0162.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Alice is traveling from UK to Singapore. Call +1-202-555-0191.,<MASKED> is traveling from UK to Singapore. Call <MASKED>.
+Jane works at Amazon and uses credit card 4111 1111 1111 1111.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email contact@work.org to contact Bob.,Email <MASKED> to contact <MASKED>.
+The SSN for John is 111-22-3333.,The SSN for <MASKED> is <MASKED>.
+Wei lives at 221B Baker Street, London, UK and can be reached at +1-202-555-0110.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Carlos works at Microsoft and uses credit card 5500 0000 0000 0004.,<MASKED> works at Microsoft and uses credit card <MASKED>.
+Email test@example.com to contact Jane.,Email <MASKED> to contact <MASKED>.
+Bob is traveling from India to UAE. Call +1-202-555-0144.,<MASKED> is traveling from India to UAE. Call <MASKED>.
+Meeting scheduled with Amazon representative Fatima Garcia.,Meeting scheduled with Amazon representative <MASKED>.
+Alice lives at 742 Evergreen Terrace, Springfield, USA and can be reached at +1-202-555-0189.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at OpenAI and uses credit card 4111 1111 1111 1111.,<MASKED> works at OpenAI and uses credit card <MASKED>.
+Email alice@mail.com to contact Carlos.,Email <MASKED> to contact <MASKED>.
+The SSN for Priya is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
+Jane lives at MG Road, Bangalore, India and can be reached at +1-202-555-0107.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Wei works at Google and uses credit card 3400 000000 00009.,<MASKED> works at Google and uses credit card <MASKED>.
+Email user@domain.com to contact Fatima.,Email <MASKED> to contact <MASKED>.
+Bob is traveling from Singapore to USA. Call +1-202-555-0158.,<MASKED> is traveling from Singapore to USA. Call <MASKED>.
+Meeting scheduled with Microsoft representative Alice Brown.,Meeting scheduled with Microsoft representative <MASKED>.
+Carlos lives at Downtown Dubai, UAE and can be reached at +1-202-555-0129.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at Amazon and uses credit card 5500 0000 0000 0004.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email contact@work.org to contact Wei.,Email <MASKED> to contact <MASKED>.
+The SSN for Alice is 123-45-6789.,The SSN for <MASKED> is <MASKED>.
+Priya lives at 221B Baker Street, London, UK and can be reached at +1-202-555-0172.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Fatima works at OpenAI and uses credit card 4111 1111 1111 1111.,<MASKED> works at OpenAI and uses credit card <MASKED>.
+Email test@example.com to contact John.,Email <MASKED> to contact <MASKED>.
+Wei is traveling from UAE to India. Call +1-202-555-0194.,<MASKED> is traveling from UAE to India. Call <MASKED>.
+Meeting scheduled with Google representative Carlos Khan.,Meeting scheduled with Google representative <MASKED>.
+Jane lives at MG Road, Bangalore, India and can be reached at +1-202-555-0118.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Microsoft and uses credit card 3400 000000 00009.,<MASKED> works at Microsoft and uses credit card <MASKED>.
+Email alice@mail.com to contact Wei.,Email <MASKED> to contact <MASKED>.
+The SSN for Carlos is 111-22-3333.,The SSN for <MASKED> is <MASKED>.
+Priya works at Amazon and uses credit card 5500 0000 0000 0004.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email user@domain.com to contact Bob.,Email <MASKED> to contact <MASKED>.
+Alice lives at Downtown Dubai, UAE and can be reached at +1-202-555-0166.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Meeting scheduled with OpenAI representative John Doe.,Meeting scheduled with OpenAI representative <MASKED>.
+Wei works at Google and uses credit card 4111 1111 1111 1111.,<MASKED> works at Google and uses credit card <MASKED>.
+Email contact@work.org to contact Priya.,Email <MASKED> to contact <MASKED>.
+The SSN for Fatima is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
+Carlos lives at 742 Evergreen Terrace, Springfield, USA and can be reached at +1-202-555-0134.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Microsoft and uses credit card 3400 000000 00009.,<MASKED> works at Microsoft and uses credit card <MASKED>.
+Email alice@mail.com to contact Jane.,Email <MASKED> to contact <MASKED>.
+Priya is traveling from India to Singapore. Call +1-202-555-0180.,<MASKED> is traveling from India to Singapore. Call <MASKED>.
+Meeting scheduled with Amazon representative Wei Lee.,Meeting scheduled with Amazon representative <MASKED>.
+Alice lives at MG Road, Bangalore, India and can be reached at +1-202-555-0141.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at OpenAI and uses credit card 5500 0000 0000 0004.,<MASKED> works at OpenAI and uses credit card <MASKED>.
+Email test@example.com to contact Carlos.,Email <MASKED> to contact <MASKED>.
+The SSN for Wei is 123-45-6789.,The SSN for <MASKED> is <MASKED>.
+Fatima lives at Downtown Dubai, UAE and can be reached at +1-202-555-0123.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Google and uses credit card 4111 1111 1111 1111.,<MASKED> works at Google and uses credit card <MASKED>.
+Email user@domain.com to contact Alice.,Email <MASKED> to contact <MASKED>.
+Carlos is traveling from USA to UK. Call +1-202-555-0198.,<MASKED> is traveling from USA to UK. Call <MASKED>.
+Meeting scheduled with Microsoft representative Fatima Garcia.,Meeting scheduled with Microsoft representative <MASKED>.
+Priya lives at 221B Baker Street, London, UK and can be reached at +1-202-555-0179.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Wei works at Amazon and uses credit card 3400 000000 00009.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email contact@work.org to contact Bob.,Email <MASKED> to contact <MASKED>.
+The SSN for Jane is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
+Alice lives at MG Road, Bangalore, India and can be reached at +1-202-555-0150.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at Google and uses credit card 4111 1111 1111 1111.,<MASKED> works at Google and uses credit card <MASKED>.
+Email alice@mail.com to contact Fatima.,Email <MASKED> to contact <MASKED>.
+Wei is traveling from Singapore to UAE. Call +1-202-555-0104.,<MASKED> is traveling from Singapore to UAE. Call <MASKED>.
+Meeting scheduled with OpenAI representative Carlos Khan.,Meeting scheduled with OpenAI representative <MASKED>.
+Jane lives at 742 Evergreen Terrace, Springfield, USA and can be reached at +1-202-555-0186.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Amazon and uses credit card 5500 0000 0000 0004.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email user@domain.com to contact Wei.,Email <MASKED> to contact <MASKED>.
+The SSN for Alice is 111-22-3333.,The SSN for <MASKED> is <MASKED>.
+Carlos lives at Downtown Dubai, UAE and can be reached at +1-202-555-0116.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Fatima works at Microsoft and uses credit card 3400 000000 00009.,<MASKED> works at Microsoft and uses credit card <MASKED>.
+Email contact@work.org to contact John.,Email <MASKED> to contact <MASKED>.
+Priya is traveling from UK to India. Call +1-202-555-0191.,<MASKED> is traveling from UK to India. Call <MASKED>.
+Meeting scheduled with Google representative Jane Smith.,Meeting scheduled with Google representative <MASKED>.
+Alice lives at MG Road, Bangalore, India and can be reached at +1-202-555-0168.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at OpenAI and uses credit card 4111 1111 1111 1111.,<MASKED> works at OpenAI and uses credit card <MASKED>.
+Email test@example.com to contact Priya.,Email <MASKED> to contact <MASKED>.
+The SSN for Carlos is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
+Wei lives at 221B Baker Street, London, UK and can be reached at +1-202-555-0101.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Carlos works at Amazon and uses credit card 5500 0000 0000 0004.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email user@domain.com to contact Jane.,Email <MASKED> to contact <MASKED>.
+Priya is traveling from UAE to Singapore. Call +1-202-555-0176.,<MASKED> is traveling from UAE to Singapore. Call <MASKED>.
+Meeting scheduled with Microsoft representative Bob Brown.,Meeting scheduled with Microsoft representative <MASKED>.
+Alice lives at 742 Evergreen Terrace, Springfield, USA and can be reached at +1-202-555-0149.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at Google and uses credit card 4111 1111 1111 1111.,<MASKED> works at Google and uses credit card <MASKED>.
+Email alice@mail.com to contact Fatima.,Email <MASKED> to contact <MASKED>.
+The SSN for Wei is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
+Carlos lives at MG Road, Bangalore, India and can be reached at +1-202-555-0133.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Amazon and uses credit card 3400 000000 00009.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email contact@work.org to contact Alice.,Email <MASKED> to contact <MASKED>.
+Priya is traveling from USA to UAE. Call +1-202-555-0193.,<MASKED> is traveling from USA to UAE. Call <MASKED>.
+Meeting scheduled with OpenAI representative Wei Lee.,Meeting scheduled with OpenAI representative <MASKED>.
+Alice lives at Downtown Dubai, UAE and can be reached at +1-202-555-0111.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at Microsoft and uses credit card 5500 0000 0000 0004.,<MASKED> works at Microsoft and uses credit card <MASKED>.
+Email test@example.com to contact Bob.,Email <MASKED> to contact <MASKED>.
+The SSN for Carlos is 123-45-6789.,The SSN for <MASKED> is <MASKED>.
+Fatima lives at 221B Baker Street, London, UK and can be reached at +1-202-555-0182.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Wei works at Google and uses credit card 4111 1111 1111 1111.,<MASKED> works at Google and uses credit card <MASKED>.
+Email user@domain.com to contact John.,Email <MASKED> to contact <MASKED>.
+Carlos is traveling from India to USA. Call +1-202-555-0157.,<MASKED> is traveling from India to USA. Call <MASKED>.
+Meeting scheduled with Amazon representative Jane Smith.,Meeting scheduled with Amazon representative <MASKED>.
+Alice lives at MG Road, Bangalore, India and can be reached at +1-202-555-0164.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at OpenAI and uses credit card 3400 000000 00009.,<MASKED> works at OpenAI and uses credit card <MASKED>.
+Email alice@mail.com to contact Wei.,Email <MASKED> to contact <MASKED>.
+The SSN for Priya is 111-22-3333.,The SSN for <MASKED> is <MASKED>.
+Carlos lives at Downtown Dubai, UAE and can be reached at +1-202-555-0109.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Fatima works at Microsoft and uses credit card 4111 1111 1111 1111.,<MASKED> works at Microsoft and uses credit card <MASKED>.
+Email contact@work.org to contact Jane.,Email <MASKED> to contact <MASKED>.
+Wei is traveling from Singapore to UK. Call +1-202-555-0127.,<MASKED> is traveling from Singapore to UK. Call <MASKED>.
+Meeting scheduled with Google representative Carlos Khan.,Meeting scheduled with Google representative <MASKED>.
+Jane lives at 742 Evergreen Terrace, Springfield, USA and can be reached at +1-202-555-0183.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Amazon and uses credit card 5500 0000 0000 0004.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email user@domain.com to contact Fatima.,Email <MASKED> to contact <MASKED>.
+The SSN for Alice is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
+Priya lives at MG Road, Bangalore, India and can be reached at +1-202-555-0171.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at OpenAI and uses credit card 4111 1111 1111 1111.,<MASKED> works at OpenAI and uses credit card <MASKED>.
+Email test@example.com to contact Carlos.,Email <MASKED> to contact <MASKED>.
+Wei lives at Downtown Dubai, UAE and can be reached at +1-202-555-0188.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Carlos works at Google and uses credit card 3400 000000 00009.,<MASKED> works at Google and uses credit card <MASKED>.
+Email contact@work.org to contact Alice.,Email <MASKED> to contact <MASKED>.
+Priya is traveling from Singapore to India. Call +1-202-555-0160.,<MASKED> is traveling from Singapore to India. Call <MASKED>.
+Meeting scheduled with Amazon representative Bob Smith.,Meeting scheduled with Amazon representative <MASKED>.
+Alice lives at 221B Baker Street, London, UK and can be reached at +1-202-555-0113.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at Microsoft and uses credit card 5500 0000 0000 0004.,<MASKED> works at Microsoft and uses credit card <MASKED>.
+Email test@example.com to contact Fatima.,Email <MASKED> to contact <MASKED>.
+The SSN for Wei is 111-22-3333.,The SSN for <MASKED> is <MASKED>.
+Carlos lives at MG Road, Bangalore, India and can be reached at +1-202-555-0146.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Amazon and uses credit card 4111 1111 1111 1111.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email user@domain.com to contact Jane.,Email <MASKED> to contact <MASKED>.
+Priya is traveling from UAE to USA. Call +1-202-555-0196.,<MASKED> is traveling from UAE to USA. Call <MASKED>.
+Meeting scheduled with OpenAI representative Carlos Khan.,Meeting scheduled with OpenAI representative <MASKED>.
+Alice lives at Downtown Dubai, UAE and can be reached at +1-202-555-0125.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at Google and uses credit card 3400 000000 00009.,<MASKED> works at Google and uses credit card <MASKED>.
+Email alice@mail.com to contact Bob.,Email <MASKED> to contact <MASKED>.
+The SSN for Carlos is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
+Fatima lives at 742 Evergreen Terrace, Springfield, USA and can be reached at +1-202-555-0177.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Wei works at Amazon and uses credit card 5500 0000 0000 0004.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email contact@work.org to contact John.,Email <MASKED> to contact <MASKED>.
+Carlos is traveling from UK to Singapore. Call +1-202-555-0131.,<MASKED> is traveling from UK to Singapore. Call <MASKED>.
+Meeting scheduled with Microsoft representative Jane Smith.,Meeting scheduled with Microsoft representative <MASKED>.
+Alice lives at MG Road, Bangalore, India and can be reached at +1-202-555-0184.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at OpenAI and uses credit card 4111 1111 1111 1111.,<MASKED> works at OpenAI and uses credit card <MASKED>.
+Email test@example.com to contact Wei.,Email <MASKED> to contact <MASKED>.
+The SSN for Priya is 123-45-6789.,The SSN for <MASKED> is <MASKED>.
+Carlos lives at Downtown Dubai, UAE and can be reached at +1-202-555-0108.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Fatima works at Microsoft and uses credit card 3400 000000 00009.,<MASKED> works at Microsoft and uses credit card <MASKED>.
+Email user@domain.com to contact Carlos.,Email <MASKED> to contact <MASKED>.
+Wei is traveling from India to USA. Call +1-202-555-0152.,<MASKED> is traveling from India to USA. Call <MASKED>.
+Meeting scheduled with Google representative Bob Brown.,Meeting scheduled with Google representative <MASKED>.
+Jane lives at 221B Baker Street, London, UK and can be reached at +1-202-555-0119.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Amazon and uses credit card 5500 0000 0000 0004.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email contact@work.org to contact Fatima.,Email <MASKED> to contact <MASKED>.
+The SSN for Alice is 111-22-3333.,The SSN for <MASKED> is <MASKED>.
+Priya lives at MG Road, Bangalore, India and can be reached at +1-202-555-0173.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at OpenAI and uses credit card 4111 1111 1111 1111.,<MASKED> works at OpenAI and uses credit card <MASKED>.
+Email alice@mail.com to contact Jane.,Email <MASKED> to contact <MASKED>.
+Wei lives at 742 Evergreen Terrace, Springfield, USA and can be reached at +1-202-555-0181.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Carlos works at Amazon and uses credit card 5500 0000 0000 0004.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email user@domain.com to contact Alice.,Email <MASKED> to contact <MASKED>.
+Priya is traveling from USA to UK. Call +1-202-555-0147.,<MASKED> is traveling from USA to UK. Call <MASKED>.
+Meeting scheduled with Microsoft representative Jane Smith.,Meeting scheduled with Microsoft representative <MASKED>.
+Alice lives at Downtown Dubai, UAE and can be reached at +1-202-555-0114.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at Google and uses credit card 3400 000000 00009.,<MASKED> works at Google and uses credit card <MASKED>.
+Email contact@work.org to contact Bob.,Email <MASKED> to contact <MASKED>.
+The SSN for Wei is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
+Carlos lives at MG Road, Bangalore, India and can be reached at +1-202-555-0136.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Amazon and uses credit card 4111 1111 1111 1111.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email test@example.com to contact Jane.,Email <MASKED> to contact <MASKED>.
+Priya is traveling from UAE to India. Call +1-202-555-0199.,<MASKED> is traveling from UAE to India. Call <MASKED>.
+Meeting scheduled with OpenAI representative Carlos Khan.,Meeting scheduled with OpenAI representative <MASKED>.
+Alice lives at 221B Baker Street, London, UK and can be reached at +1-202-555-0126.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at Microsoft and uses credit card 5500 0000 0000 0004.,<MASKED> works at Microsoft and uses credit card <MASKED>.
+Email alice@mail.com to contact Fatima.,Email <MASKED> to contact <MASKED>.
+The SSN for Carlos is 111-22-3333.,The SSN for <MASKED> is <MASKED>.
+Fatima lives at Downtown Dubai, UAE and can be reached at +1-202-555-0105.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Wei works at Amazon and uses credit card 4111 1111 1111 1111.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email user@domain.com to contact John.,Email <MASKED> to contact <MASKED>.
+Carlos is traveling from Singapore to USA. Call +1-202-555-0169.,<MASKED> is traveling from Singapore to USA. Call <MASKED>.
+Meeting scheduled with Google representative Bob Brown.,Meeting scheduled with Google representative <MASKED>.
+Jane lives at MG Road, Bangalore, India and can be reached at +1-202-555-0185.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at OpenAI and uses credit card 3400 000000 00009.,<MASKED> works at OpenAI and uses credit card <MASKED>.
+Email contact@work.org to contact Wei.,Email <MASKED> to contact <MASKED>.
+The SSN for Alice is 123-45-6789.,The SSN for <MASKED> is <MASKED>.
+Priya lives at 742 Evergreen Terrace, Springfield, USA and can be reached at +1-202-555-0174.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+John works at Amazon and uses credit card 5500 0000 0000 0004.,<MASKED> works at Amazon and uses credit card <MASKED>.
+Email test@example.com to contact Carlos.,Email <MASKED> to contact <MASKED>.
+Wei is traveling from UK to UAE. Call +1-202-555-0159.,<MASKED> is traveling from UK to UAE. Call <MASKED>.
+Meeting scheduled with Microsoft representative Alice Brown.,Meeting scheduled with Microsoft representative <MASKED>.
+Jane lives at Downtown Dubai, UAE and can be reached at +1-202-555-0112.,<MASKED> lives at <MASKED> and can be reached at <MASKED>.
+Bob works at Google and uses credit card 4111 1111 1111 1111.,<MASKED> works at Google and uses credit card <MASKED>.
+Email alice@mail.com to contact Priya.,Email <MASKED> to contact <MASKED>.
+The SSN for Carlos is 987-65-4321.,The SSN for <MASKED> is <MASKED>.
