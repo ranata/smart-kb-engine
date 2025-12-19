@@ -1,0 +1,10 @@
+messages = [
+    SystemMessage(content="You are a helpful enterprise assistant."),
+    HumanMessage(content="Explain JWT authentication."),
+    HumanMessage(content="What problem does it solve?"),
+    HumanMessage(content="How is it different from OAuth?"),
+    HumanMessage(content="What is an access token?"),
+    HumanMessage(content="What is a refresh token?"),
+    HumanMessage(content="How does token expiry work?"),
+    HumanMessage(content="Give a simple analogy."),
+]
