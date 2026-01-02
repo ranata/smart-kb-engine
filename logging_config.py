@@ -37,4 +37,17 @@ def setup_logging():
     root_logger.addHandler(error_handler)
 
     # Silence Werkzeug access logs
-    logging.getLogger("werkzeug").setLevel(logging.WARNING)
+    noisy_libs = {
+    "urllib3": logging.WARNING,
+    "requests": logging.WARNING,
+    "azure": logging.WARNING,
+    "azure.identity": logging.WARNING,
+    "azure.core": logging.WARNING,
+    "msal": logging.WARNING,
+    "presidio_analyzer": logging.WARNING,
+    "werkzeug": logging.WARNING,
+    "langchain": logging.INFO,   # keep high-level visibility
+    }
+
+    for lib, lvl in noisy_libs.items():
+        logging.getLogger(lib).setLevel(lvl)
