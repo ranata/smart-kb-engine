@@ -1,168 +1,250 @@
-from typing import TypedDict
 import time
-from collections import defaultdict
+from datetime import datetime as dt
 import logging
 
-from langgraph.graph import START, StateGraph, END
+from flask import Flask, request
+from flask_restx import Api, Resource, fields
 
-import tool_set
-from llm_middleware import LLMChat
+from logging_config import setup_logging
+
+import configIA
+import prompt_templates
+import state_object
+import vector_DB
+import memoryMg
+import retriever
+import dbConnector
 
 
-logger = logging.getLogger(__name__)
+# ------------------------------------------------------------------
+# Logging (ONE TIME)
+# ------------------------------------------------------------------
+setup_logging()
+logger = logging.getLogger("ragBackend.flask_app")
 
 
-class ProcessCollection:
-    def __init__(
-        self,
-        process_system_prompts,
-        process_query_prompt_templates,
-        retriever,
-    ):
-        self.chat_eng = LLMChat()
-        self.retriever = retriever
+# ------------------------------------------------------------------
+# App startup (fail fast)
+# ------------------------------------------------------------------
+try:
+    config = configIA.configure()
 
-        self.chatID_next_tool = defaultdict()
-        self.chatID_current_query = defaultdict()
-        self.chatID_response_msg = defaultdict()
-        self.chatID_response_msg_for_consol = defaultdict()
+    connector = dbConnector.DBConnector()
+    connector.connect()
 
-        self.process_system_prompts = process_system_prompts
-        self.process_query_prompt_templates = process_query_prompt_templates
+    memory_store = memoryMg.MemoryStoreSQL(
+        config.memory_vector_db_name,
+        connector
+    )
+    memory_store.init_table()
 
-    def chat(
-        self,
-        query,
+    base_vector_cols = [
+        "paragraph_category",
+        "paragraph_pages",
+        "paragraph_title",
+        "paragraph_file",
+        "paragraph_content",
+        "Geo_Scope",
+    ]
+
+    knowledgeDB_doc = vector_DB.SQLvectorDB(
+        config.base_vector_db_name,
+        base_vector_cols,
+        connector
+    )
+    knowledgeDB_doc.load_model()
+
+    meta_data_cols = [
+        "title",
+        "file_name",
+        "file_id",
+        "summary",
+        "category",
+        "version_no",
+        "Geo_Scope",
+    ]
+
+    knowledgeDB_meta = vector_DB.SQLvectorDB(
+        config.meta_data_db_name,
+        meta_data_cols,
+        connector
+    )
+    knowledgeDB_meta.load_model()
+
+    retriever_engine = retriever.RetrieverEng(
+        knowledgeDB_doc,
+        knowledgeDB_meta
+    )
+
+    process_engine = state_object.ProcessCollection(
+        prompt_templates.process_system_prompts,
+        prompt_templates.process_query_prompt_templates,
+        retriever_engine,
+    )
+
+    state_context = {
+        "process_engine": process_engine,
+        "memory_store": memory_store,
+        "knowledgeDB_meta": knowledgeDB_meta,
+        "knowledgeDB_doc": knowledgeDB_doc,
+    }
+
+    state_machine = state_object.StateMachine(state_context)
+    state_machine.build_graph()
+
+except Exception:
+    logger.exception("Fatal startup failure")
+    raise
+
+
+# ------------------------------------------------------------------
+# Flask + API
+# ------------------------------------------------------------------
+app = Flask(__name__)
+api = Api(
+    app,
+    version="1.0",
+    title="IA LLM Backend",
+    description="Intelligent Assistant API",
+)
+
+
+# ------------------------------------------------------------------
+# API models
+# ------------------------------------------------------------------
+chat_info_model = api.model("ChatInfo", {
+    "conversationId": fields.String(required=True),
+    "interactionId": fields.String(required=True),
+    "userId": fields.Integer(required=True),
+    "userContext": fields.Raw(required=True),
+    "userQuery": fields.String(required=True),
+    "userQueryTime": fields.String(required=True),
+    "firstInteraction": fields.Boolean(required=True),
+})
+
+llm_response_model = api.model("LLMResponse", {
+    "type": fields.String,
+    "data": fields.String,
+    "responseTime": fields.String,
+    "topicName": fields.String,
+})
+
+backend_response_model = api.model("BackendResponse", {
+    "interactionId": fields.String,
+    "conversationId": fields.String,
+    "userId": fields.Integer,
+    "userQuery": fields.String,
+    "userQueryTime": fields.String,
+    "llmResponse": fields.Nested(llm_response_model),
+    "errorDetails": fields.Raw,
+    "userContext": fields.Raw,
+})
+
+
+# ------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------
+def format_chat_output(state_response, chat_info):
+    content = (
+        state_response["chat"]
+        if state_response["chat"]
+        else state_response["default"]
+    )
+
+    response_type = "TEXT"
+    error_details = {
+        "code": state_response["health_code"],
+        "message": "Success",
+    }
+
+    if state_response["health_code"].startswith("ERR"):
+        response_type = "ERROR"
+        error_details["message"] = content
+    elif state_response["health_code"].startswith("WRN"):
+        response_type = "WARNING"
+
+    return {
+        "interactionId": chat_info["interactionId"],
+        "conversationId": chat_info["conversationId"],
+        "userId": chat_info["userId"],
+        "userQuery": chat_info["userQuery"],
+        "userQueryTime": chat_info["userQueryTime"],
+        "llmResponse": {
+            "type": response_type,
+            "data": content,
+            "responseTime": dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "topicName": state_response.get("topic", ""),
+        },
+        "errorDetails": error_details,
+        "userContext": chat_info["userContext"],
+    }
+
+
+def get_llm_response(chat_info):
+    chatID = f"{chat_info['userId']}@{chat_info['conversationId']}"
+    logger.info("Processing chatID=%s", chatID)
+
+    state_message = {
+        "chatID": chatID,
+        "query": chat_info["userQuery"],
+        "route": "start",
+        "route_reason": "",
+        "chat": "",
+        "default": "",
+        "country": "",
+        "health_code": "",
+        "check": "",
+        "topic": "",
+        "fetch_topic": "yes" if chat_info["firstInteraction"] else "no",
+        "time_remain": config.time_out_thresh,
+    }
+
+    start = time.time()
+    try:
+        state_response = state_machine.invoke(state_message)
+    except Exception:
+        logger.exception("State machine failed | chatID=%s", chatID)
+        raise
+
+    logger.info(
+        "LLM completed | chatID=%s | duration=%.3fs",
         chatID,
-        memory_store,
-        fetch_topic="yes",
-        channel="router",
-        filter_rag1="",
-        time_limit=48,
-    ):
-        status_msg_chat = []
-        topic_title = ""
+        time.time() - start,
+    )
 
-        start_time = time.time()
-        timeout_msg = (
-            "We didn't get a response due to a technical issue. "
-            "Please try again later."
+    return format_chat_output(state_response, chat_info)
+
+
+# ------------------------------------------------------------------
+# Routes
+# ------------------------------------------------------------------
+@api.route("/api/v1/assistant/rag")
+class RAGEndpoint(Resource):
+
+    @api.expect(chat_info_model)
+    @api.marshal_with(backend_response_model)
+    def post(self):
+        chat_info = request.json
+        logger.debug(
+            "Incoming request | interactionId=%s",
+            chat_info.get("interactionId"),
         )
+        return get_llm_response(chat_info)
 
-        logger.info(
-            "ProcessCollection.chat | channel=%s | chatID=%s",
-            channel,
-            chatID,
-        )
 
-        # --------------------------------------------------
-        # ROUTER
-        # --------------------------------------------------
-        if channel == "router":
-            response_message, status_msg = self.chat_eng.get_router_response(
-                query=query,
-                memory_store=memory_store,
-                chatID=chatID,
-                system_prompt=self.process_system_prompts[channel],
-            )
+@api.route("/health")
+class LocalHealth(Resource):
+    def get(self):
+        return {"LLM_status_local": 200}
 
-            status_msg_chat.append(status_msg)
 
-            if status_msg != "OK000":
-                return response_message, status_msg_chat, topic_title
+# ------------------------------------------------------------------
+# Entrypoint
+# ------------------------------------------------------------------
+def main():
+    logger.info("Starting IA LLM service")
+    app.run(host="0.0.0.0", port=9090, threaded=True)
 
-        # --------------------------------------------------
-        # RAG
-        # --------------------------------------------------
-        elif channel == "RAG":
-            context, file_hits = self.retriever.retrieve_for_RAG(
-                query,
-                filter_cont=filter_rag1,
-            )
 
-            if not file_hits:
-                status_msg_chat.append("ERR003")
-                return (
-                    {"role": "assistant", "content": "No relevant context found."},
-                    status_msg_chat,
-                    topic_title,
-                )
-
-            aug_query = self.chat_eng.augment(
-                query,
-                context,
-                self.process_query_prompt_templates[channel],
-            )
-
-            response_message, status_msg, topic_title = (
-                self.chat_eng.get_RAG_response(
-                    query=query,
-                    aug_query=aug_query,
-                    memory_store=memory_store,
-                    chatID=chatID,
-                    system_prompt=self.process_system_prompts[channel],
-                    topic_system_prompt=self.process_system_prompts["topic"],
-                    fetch_topic=fetch_topic,
-                )
-            )
-
-            status_msg_chat.append(status_msg)
-
-            if status_msg != "OK001":
-                return response_message, status_msg_chat, topic_title
-
-        # --------------------------------------------------
-        # NON-RAG
-        # --------------------------------------------------
-        elif channel == "non_RAG":
-            response_message, status_msg, topic_title = (
-                self.chat_eng.non_RAG_response(
-                    query=query,
-                    memory_store=memory_store,
-                    chatID=chatID,
-                    system_prompt=self.process_system_prompts[channel],
-                    query_prompt_template=self.process_query_prompt_templates[channel],
-                    topic_system_prompt=self.process_system_prompts["topic"],
-                )
-            )
-
-            status_msg_chat.append(status_msg)
-
-            if status_msg != "OK001":
-                return response_message, status_msg_chat, topic_title
-
-        # --------------------------------------------------
-        # INVALID CHANNEL
-        # --------------------------------------------------
-        else:
-            status_msg_chat.append("ERR004")
-            return (
-                {
-                    "role": "assistant",
-                    "content": f"Invalid channel: {channel}",
-                },
-                status_msg_chat,
-                topic_title,
-            )
-
-        # --------------------------------------------------
-        # TIMEOUT CHECK
-        # --------------------------------------------------
-        elapsed = time.time() - start_time
-        if time_limit - elapsed <= 0:
-            status_msg_chat.append("ERR005")
-            logger.warning(
-                "Timeout | channel=%s | elapsed=%.2f",
-                channel,
-                elapsed,
-            )
-            return (
-                {"role": "assistant", "content": timeout_msg},
-                status_msg_chat,
-                topic_title,
-            )
-
-        self.chatID_response_msg[chatID] = response_message
-        self.chatID_response_msg_for_consol[chatID] = f"{channel}: {response_message}"
-
-        return response_message, status_msg_chat, topic_title
+if __name__ == "__main__":
+    main()
