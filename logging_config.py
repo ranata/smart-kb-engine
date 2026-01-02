@@ -76,6 +76,4 @@ def setup_logging():
         lib_logger.setLevel(logging.WARNING)
         lib_logger.propagate = False
 
-    logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
-
     return app_logger
