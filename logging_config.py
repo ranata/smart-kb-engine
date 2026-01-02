@@ -2,15 +2,25 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 
-LOG_DIR = "logs"
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+LOG_BASE_DIR = "/mnt/adlscontainer/CreditIQ/logs"
+SERVICE_NAME = "python_srv"
+
+APP_ENV = os.getenv("APP_ENV", "dev").lower()
+
+LOG_LEVEL = logging.DEBUG if APP_ENV == "dev" else logging.INFO
+
+LOG_DIR = f"{LOG_BASE_DIR}/{APP_ENV}/{SERVICE_NAME}"
 os.makedirs(LOG_DIR, exist_ok=True)
 
-def setup_logging():
-    # Root logger
-    logging.basicConfig(level=logging.INFO)
-    root_logger = logging.getLogger()
-    root_logger.handlers = []  # Clear default handlers
+MAX_BYTES = 10_000_000
+BACKUP_COUNT = 5
 
+
+def setup_logging():
     formatter = logging.Formatter(
         "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
     )
@@ -18,36 +28,54 @@ def setup_logging():
     # App log (your prints go here)
     app_handler = RotatingFileHandler(
         f"{LOG_DIR}/app.log",
-        maxBytes=10_000_000,
-        backupCount=5
+        maxBytes=MAX_BYTES,
+        backupCount=BACKUP_COUNT
     )
+    app_handler.setLevel(LOG_LEVEL)
     app_handler.setFormatter(formatter)
-    app_handler.setLevel(logging.INFO)
-
+    
     # Error log
     error_handler = RotatingFileHandler(
         f"{LOG_DIR}/error.log",
-        maxBytes=10_000_000,
-        backupCount=5
+        maxBytes=MAX_BYTES,
+        backupCount=BACKUP_COUNT
     )
-    error_handler.setFormatter(formatter)
+
     error_handler.setLevel(logging.ERROR)
+    error_handler.setFormatter(formatter)
 
-    root_logger.addHandler(app_handler)
-    root_logger.addHandler(error_handler)
+    app_logger = logging.getLogger("ragBackend")
+    app_logger.setLevel(LOG_LEVEL)
+    app_logger.handlers.clear()
+    app_logger.addHandler(app_handler)
+    app_logger.addHandler(error_handler)
+    app_logger.propagate = False
 
-    # Silence Werkzeug access logs
-    noisy_libs = {
-    "urllib3": logging.WARNING,
-    "requests": logging.WARNING,
-    "azure": logging.WARNING,
-    "azure.identity": logging.WARNING,
-    "azure.core": logging.WARNING,
-    "msal": logging.WARNING,
-    "presidio_analyzer": logging.WARNING,
-    "werkzeug": logging.WARNING,
-    "langchain": logging.INFO,   # keep high-level visibility
-    }
+    root_logger = logging.getLogger()
+    root_logger.handlers.clear()
+    root_logger.setLevel(logging.WARNING)
 
-    for lib, lvl in noisy_libs.items():
-        logging.getLogger(lib).setLevel(lvl)
+
+    # Silence noisy libraries
+    noisy_libs = [
+        "urllib3",
+        "requests",
+        "azure",
+        "azure.identity",
+        "azure.core",
+        "azure.core.pipeline",
+        "azure.core.pipeline.policies.http_logging_policy",
+        "msal",
+        "presidio",
+        "presidio_analyzer",
+        "werkzeug",
+    ]
+
+    for lib in noisy_libs:
+        lib_logger = logging.getLogger(lib)
+        lib_logger.setLevel(logging.WARNING)
+        lib_logger.propagate = False
+
+    logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
+
+    return app_logger
