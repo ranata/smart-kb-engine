@@ -1,32 +1,20 @@
-# d61864-genai — Department GenAI Platform SDK
+# Public API surface for the GenAI SDK
 
-Internal GenAI platform SDK for Department 61864.
+from d61864_genai.llms import ChatModel
+from d61864_genai.embeddings import EmbeddingModel
+from d61864_genai.eval import evaluate_retriever, evaluate_generation
+from d61864_genai.observability import init_telemetry
+from d61864_genai.data import get_vector_store
+from d61864_genai.guardrails import Guardrail
+from d61864_genai.config import load_config
 
-This package provides standardized building blocks for developing GenAI applications inside the corporate environment, including:
-
-- Corporate LLM and embedding wrappers
-- Authentication and configuration handling
-- Evaluation frameworks
-- Vector store integrations
-- Guardrails and policy enforcement
-- Observability and telemetry hooks
-- LangGraph memory and checkpoint adapters
-
-The goal is to **avoid re-inventing infrastructure** across teams and to enforce consistent patterns for security, evaluation, and operations.
-
----
-
-## 🎯 Design Goals
-
-This SDK is built around:
-
-- **Corporate-first networking** — works with internal LLM gateways and proxies
-- **Security by default** — auth, headers, secrets handling
-- **Observability-ready** — OpenTelemetry compatible
-- **Evaluation-driven** — retriever + generator benchmarks
-- **Modular adoption** — install only what you need via extras
-- **Stable public API** — safe upgrades for downstream apps
-
----
-
-## 📦 Package Layout
+__all__ = [
+    "ChatModel",
+    "EmbeddingModel",
+    "evaluate_retriever",
+    "evaluate_generation",
+    "init_telemetry",
+    "get_vector_store",
+    "Guardrail",
+    "load_config",
+]
