@@ -1,258 +1,125 @@
+# d61864_genai/logging/logging_config.py
 import logging
-import time
-import requests
-from typing import List, Optional, Any
+import os
+import sys
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+from typing import Optional
 
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.embeddings import Embeddings
-from langchain_core.messages import BaseMessage, AIMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
-from langchain_core.callbacks import CallbackManagerForLLMRun
-from pydantic import Field, PrivateAttr
-
-import configIA
-from get_token import get_token_from_sc_idp
-from sc_idp_token_enc import decrypt_sc_idp_token
-
-logger = logging.getLogger("ragBackend.aif_langchain_models")
+DEFAULT_SERVICE_NAME = "d61864_genai"
+DEFAULT_MAX_BYTES = 10 * 1024 * 1024  # 10 MB
+DEFAULT_BACKUP_COUNT = 5
 
 
-class AIFChatModel(BaseChatModel):
+def setup_logging(
+    service_name: Optional[str] = None,
+    log_base_dir: Optional[str] = None,
+    max_bytes: int = DEFAULT_MAX_BYTES,
+    backup_count: int = DEFAULT_BACKUP_COUNT,
+    level: Optional[int] = None,
+) -> logging.Logger:
     """
-    LangChain-compatible ChatModel that wraps
-    JWT-based AI Factory LLM endpoint
-    """
+    Initialize and return an SDK logger for the given service_name.
 
-    config: Any = Field(default=None, exclude=True)
-    _access_token: Optional[str] = PrivateAttr(default=None)
-    model_name: Optional[str] = Field(default=None, exclude=True)
+    Behavior:
+    - If the application's root logger already has handlers, we don't override global handlers.
+      We still create/configure a scoped logger for the SDK (service_name).
+    - If log_base_dir is provided, add rotating file handlers under <log_base_dir>/<service_name>/.
+    - Otherwise, add a StreamHandler to stdout (suitable for dev & containers).
+    - Silences noisy third-party libraries.
 
-    def __init__(self, model_name: Optional[str] = None, **kwargs):
-        super().__init__(**kwargs)
-        self.config = configIA.configure()
-        self.model_name = f"databricks/{model_name}" if model_name is not None else self.config.LLM_model_name
-        self._access_token: Optional[str] = None
-
-    @property
-    def _llm_type(self) -> str:
-        return "aif-chat-model"
-
-    def _get_token(self) -> str:
-        try:
-            return decrypt_sc_idp_token()
-        except FileNotFoundError:
-            return get_token_from_sc_idp()
-        
-    def _headers(self) -> dict:
-        if not self._access_token:
-            self._access_token = self._get_token()
-
-        return {
-            "Authorization": f"Bearer {self._access_token}",
-            "Content-Type": "application/json",
-        }
-        
-
-    def _to_payload_messages(self, messages: List[BaseMessage]) -> list:
-        payload_msgs = []
-        for m in messages:
-            role = "user"
-            if m.type == "system":
-                role = "system"
-            elif m.type == "ai":
-                role = "assistant"
-
-            payload_msgs.append(
-                {
-                    "role": role,
-                    "content": m.content,
-                }
-            )
-        return payload_msgs
-
-    def _generate(
-        self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        **kwargs,
-    ) -> ChatResult:
-        payload = {
-            "model": self.model_name,
-            "messages": self._to_payload_messages(messages),
-            "temperature": kwargs.get("temperature", 0.01),
-            "guardrails": ["custom-guardrails", "content-safety"],
-        }
-
-        url = self.config.url_dict[self.config.LLM_model_name]
-
-        for attempt in range(self.config.llm_retries):
-            response = requests.post(
-                url,
-                headers=self._headers(),
-                json=payload,
-                timeout=self.config.time_out_thresh,
-                verify=False
-            )
-
-            if response.status_code == 401:
-                self._access_token = None
-                continue
-
-            if response.status_code != 200:
-                logger.error(
-                    "AIFChatModel call failed | status=%s | body=%s",
-                    response.status_code,
-                    response.text,
-                )
-                time.sleep(1)
-                continue
-
-            data = response.json()
-
-            content = None
-
-            if "choices" in data:
-                content = data["choices"][0]["message"]["content"]
-
-            elif "output" in data and isinstance(data["output"], list):
-                parts = []
-                for block in data["output"]:
-                    for item in block.get("content", []):
-                        if item.get("type") == "output_text":
-                            parts.append(item.get("text", ""))
-                content = "".join(parts)
-                
-            elif isinstance(data.get("output"), str):
-                content = data["output"]
-            else:
-                logger.error("Unrecognized LLM response schema: %s", data)
-                raise ValueError("Unrecognized LLM response schema")
-            
-            if not content:
-                logger.error("Empty content received from LLM: %s", data)
-                time.sleep(1)
-                continue
-
-            return ChatResult(
-                generations=[
-                    ChatGeneration(
-                        message=AIMessage(content=content)
-                    )
-                ]
-            )
-            
-            time.sleep(1)
-        
-        raise RuntimeError("LLM call failed after retries")
-
-
-class AIFEmbeddingModel(Embeddings):
-    """
-    LangChain-compatible Embeddings model that wraps
-    JWT-based AI Factory embedding endpoint
+    Returns the configured logger instance (logging.getLogger(service_name)).
     """
 
-    config: Any = Field(default=None, exclude=True)
-    _access_token: Optional[str] = PrivateAttr(default=None)
-    model_name: Optional[str] = Field(default=None, exclude=True)
+    service_name = service_name or os.getenv("SDK_SERVICE_NAME", DEFAULT_SERVICE_NAME)
+    log_dir_env = log_base_dir or os.getenv("SDK_LOG_BASE_DIR", "")
+    # If user sets empty string or None, we use stdout
 
-    def __init__(self, model_name: Optional[str] = None, **kwargs):
-        super().__init__(**kwargs)
-        self.config = configIA.configure()
-        self.model_name = f"databricks/{model_name}" if model_name is not None else self.config.embedding_model_name
-        self._access_token: Optional[str] = None
+    # Choose level: prefer explicit param -> env -> INFO
+    if level is None:
+        env_level = os.getenv("SDK_LOG_LEVEL", "").upper()
+        if env_level:
+            level = getattr(logging, env_level, logging.INFO)
+        else:
+            level = logging.DEBUG if os.getenv("APP_ENV", "dev").lower() == "dev" else logging.INFO
 
-    def _get_token(self) -> str:
-        try:
-            return decrypt_sc_idp_token()
-        except FileNotFoundError:
-            return get_token_from_sc_idp()
+    # Formatter
+    fmt = os.getenv(
+        "SDK_LOG_FORMAT",
+        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    )
+    datefmt = os.getenv("SDK_LOG_DATEFMT", "%Y-%m-%d %H:%M:%S")
+    formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
 
-    def _headers(self) -> dict:
-        if not self._access_token:
-            self._access_token = self._get_token()
-        return {
-            "Authorization": f"Bearer {self._access_token}",
-            "Content-Type": "application/json",
-        }
+    # Create or get the named logger for the SDK
+    logger = logging.getLogger(service_name)
+    logger.setLevel(level)
 
-    def _embed_texts(self, texts: List[str]) -> List[List[float]]:
-        """Core embedding method for both single and batch embedding"""
-        if not texts:
-            return []
+    # If app root already has handlers, don't modify root; but configure service logger
+    root = logging.getLogger()
+    root_has_handlers = bool(root.handlers)
 
-        url = self.config.url_dict[self.config.embedding_model_name]
-        payload = {
-            "model": self.model_name,
-            "input": texts
-        }
+    # Clear existing handlers for our service logger (avoid duplicates on repeated init)
+    # BUT do not clear root handlers.
+    logger.handlers.clear()
 
-        for attempt in range(self.config.llm_retries):
-            try:
-                response = requests.post(
-                    url,
-                    headers=self._headers(),
-                    json=payload,
-                    timeout=self.config.time_out_thresh,
-                    verify=False
-                )
+    if log_dir_env:
+        # safe directory creation
+        base = Path(log_dir_env) / service_name
+        base.mkdir(parents=True, exist_ok=True)
 
-                if response.status_code == 401:
-                    self._access_token = None
-                    continue
+        app_log_path = base / "app.log"
+        err_log_path = base / "error.log"
 
-                if response.status_code != 200:
-                    logger.error(
-                        "AIFEmbeddingModel call failed | status=%s | body=%s",
-                        response.status_code,
-                        response.text,
-                    )
-                    time.sleep(1)
-                    continue
+        app_handler = RotatingFileHandler(
+            filename=str(app_log_path),
+            maxBytes=max_bytes,
+            backupCount=backup_count,
+            encoding="utf-8",
+        )
+        app_handler.setFormatter(formatter)
+        app_handler.setLevel(level)
 
-                data = response.json()
+        err_handler = RotatingFileHandler(
+            filename=str(err_log_path),
+            maxBytes=max_bytes,
+            backupCount=backup_count,
+            encoding="utf-8",
+        )
+        err_handler.setFormatter(formatter)
+        err_handler.setLevel(logging.ERROR)
 
-                if "data" not in data:
-                    logger.error("Unexpected embedding response format: %s", data)
-                    time.sleep(1)
-                    continue
+        logger.addHandler(app_handler)
+        logger.addHandler(err_handler)
 
-                embeddings = [item["embedding"] for item in data["data"]]
-                
-                if len(embeddings) != len(texts):
-                    logger.error(
-                        "Embedding count mismatch | expected=%d | received=%d",
-                        len(texts),
-                        len(embeddings)
-                    )
-                    continue
+    else:
+        # Stream to stdout; if root has handlers we still add a handler scoped to service logger
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setFormatter(formatter)
+        stream_handler.setLevel(level)
+        logger.addHandler(stream_handler)
 
-                logger.info(
-                    "Embeddings generated successfully | texts=%d | dimensions=%d",
-                    len(texts),
-                    len(embeddings[0]) if embeddings else 0
-                )
+    # Prevent double propagation if the root handlers exist and you don't want duplication
+    # If root has handlers we keep propagate=False so messages don't duplicate to root handlers by default.
+    logger.propagate = False if root_has_handlers else True
 
-                return embeddings
+    # Silence noisy third-party libraries that are known to be verbose
+    noisy_libs = [
+        "urllib3",
+        "requests",
+        "azure",
+        "azure.identity",
+        "azure.core",
+        "azure.core.pipeline",
+        "azure.core.pipeline.policies.http_logging_policy",
+        "msal",
+        "presidio",
+        "presidio_analyzer",
+        "werkzeug",
+    ]
+    for lib in noisy_libs:
+        lib_logger = logging.getLogger(lib)
+        lib_logger.setLevel(logging.WARNING)
+        lib_logger.propagate = False
 
-            except Exception as e:
-                logger.error(
-                    "Embedding request failed | attempt=%d | error=%s",
-                    attempt + 1,
-                    str(e)
-                )
-                if attempt < self.config.llm_retries - 1:
-                    time.sleep(1)
-
-        raise RuntimeError("Embedding call failed after all retries")
-
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        """Embed search docs."""
-        logger.debug("Embedding documents | count=%d", len(texts))
-        return self._embed_texts(texts)
-
-    def embed_query(self, text: str) -> List[float]:
-        """Embed query text."""
-        logger.debug("Embedding query | length=%d", len(text))
-        embeddings = self._embed_texts([text])
-        return embeddings[0] if embeddings else []
+    return logger
