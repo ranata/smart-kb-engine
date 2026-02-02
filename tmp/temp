@@ -1,146 +1,32 @@
-import logging
-import time
-import requests
-from typing import List, Optional, Any
+# d51864-genai — SCB GenAI Platform SDK
 
-from langchain_core.embeddings import Embeddings
-from pydantic import Field, PrivateAttr
+Internal GenAI platform SDK for SCB.
 
-from d51864_genai.observability import get_tracer
+This package provides standardized building blocks for developing GenAI applications inside the SCB environment, including:
 
-import configIA
-from get_token import get_token_from_sc_idp
-from sc_idp_token_enc import decrypt_sc_idp_token
+- AIFactory LLM and embedding wrappers
+- Authentication and configuration handling
+- Evaluation frameworks
+- Vector store integrations
+- Guardrails and policy enforcement
+- Observability and telemetry hooks
+- LangGraph memory and checkpoint adapters
 
-logger = logging.getLogger(__name__)
+The goal is to **avoid re-inventing infrastructure** across teams and to enforce consistent patterns for security, evaluation, and operations.
 
+---
 
-class AIFEmbeddingModel(Embeddings):
-    """
-    LangChain-compatible Embeddings model that wraps
-    JWT-based AI Factory embedding endpoint
-    """
+## Design Goals
 
-    config: Any = Field(default=None, exclude=True)
-    _access_token: Optional[str] = PrivateAttr(default=None)
-    model_name: Optional[str] = Field(default=None, exclude=True)
+This SDK is built around:
 
-    def __init__(self, model_name: Optional[str] = None, **kwargs):
-        super().__init__(**kwargs)
-        self.config = configIA.configure()
-        self.model_name = f"databricks/{model_name}" if model_name is not None else self.config.embedding_model_name
-        self._access_token: Optional[str] = None
+- **SCB-first networking** — works with SCB LLM gateways and proxies
+- **Security by default** — auth, headers, secrets handling
+- **Observability-ready** — OpenTelemetry compatible
+- **Evaluation-driven** — retriever + generator benchmarks
+- **Modular adoption** — install only what you need via extras
+- **Stable SCB wide API** — safe upgrades for downstream apps
 
-    def _get_token(self) -> str:
-        try:
-            return decrypt_sc_idp_token()
-        except FileNotFoundError:
-            return get_token_from_sc_idp()
+---
 
-    def _headers(self) -> dict:
-        if not self._access_token:
-            self._access_token = self._get_token()
-        return {
-            "Authorization": f"Bearer {self._access_token}",
-            "Content-Type": "application/json",
-        }
-
-    def _embed_texts(self, texts: List[str]) -> List[List[float]]:
-        """Core embedding method for both single and batch embedding"""
-        if not texts:
-            return []
-
-        url = self.config.url_dict[self.config.embedding_model_name]
-        payload = {
-            "model": self.model_name,
-            "input": texts
-        }
-
-        tracer = get_tracer()
-        trace = None
-
-        if tracer:
-            trace = tracer.trace(
-                name="aif_embedding_request",
-                metadata={
-                    "model": self.model_name,
-                    "count": len(texts),
-                }
-            )
-
-        for attempt in range(self.config.llm_retries):
-            try:
-                response = requests.post(
-                    url,
-                    headers=self._headers(),
-                    json=payload,
-                    timeout=self.config.time_out_thresh,
-                    verify=False
-                )
-
-                if response.status_code == 401:
-                    self._access_token = None
-                    continue
-
-                if response.status_code != 200:
-                    logger.error(
-                        "AIFEmbeddingModel call failed | status=%s | body=%s",
-                        response.status_code,
-                        response.text,
-                    )
-                    time.sleep(1)
-                    continue
-
-                data = response.json()
-
-                if "data" not in data:
-                    logger.error("Unexpected embedding response format: %s", data)
-                    time.sleep(1)
-                    continue
-
-                embeddings = [item["embedding"] for item in data["data"]]
-                
-                if len(embeddings) != len(texts):
-                    logger.error(
-                        "Embedding count mismatch | expected=%d | received=%d",
-                        len(texts),
-                        len(embeddings)
-                    )
-                    continue
-
-                logger.info(
-                    "Embeddings generated successfully | texts=%d | dimensions=%d",
-                    len(texts),
-                    len(embeddings[0]) if embeddings else 0
-                )
-
-                if trace:
-                    trace.end(
-                        output={
-                            "embedding_count": len(embeddings),
-                        }
-                    )
-
-                return embeddings
-
-            except Exception as e:
-                logger.error(
-                    "Embedding request failed | attempt=%d | error=%s",
-                    attempt + 1,
-                    str(e)
-                )
-                if attempt < self.config.llm_retries - 1:
-                    time.sleep(1)
-
-        raise RuntimeError("Embedding call failed after all retries")
-
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        """Embed search docs."""
-        logger.debug("Embedding documents | count=%d", len(texts))
-        return self._embed_texts(texts)
-
-    def embed_query(self, text: str) -> List[float]:
-        """Embed query text."""
-        logger.debug("Embedding query | length=%d", len(text))
-        embeddings = self._embed_texts([text])
-        return embeddings[0] if embeddings else []
+## Package Layout
