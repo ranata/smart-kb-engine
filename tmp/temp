@@ -1,1 +1,87 @@
-Hello
+## 📚 Vector Stores & Retrieval
+
+This SDK provides a standardized abstraction for vector databases used
+in retrieval-augmented generation (RAG).
+
+Applications interact with vector stores through a single factory API:
+
+``` python
+from d51864_genai import get_vector_store
+```
+
+This avoids coupling application code to a specific backend and allows
+migration between systems with minimal changes.
+
+------------------------------------------------------------------------
+
+### Supported Backends
+
+  Backend                      Status           Intended Use
+  ---------------------------- ---------------- ---------------------
+  In-Memory                    Implemented   Dev / tests / CI
+  PGVector (Postgres)          Skeleton      Production
+  Elasticsearch / OpenSearch   Skeleton      Production
+  Azure SQL                    Skeleton      Production
+  FAISS                        Skeleton      Local / power users
+
+Skeleton backends define the contract and configuration surface but do
+not include database drivers yet.
+
+------------------------------------------------------------------------
+
+### Creating a Vector Store
+
+``` python
+from d51864_genai import get_vector_store
+
+store = get_vector_store(
+    "inmemory",
+    embedding_fn=my_embedding_fn,
+)
+```
+
+------------------------------------------------------------------------
+
+### Adding and Searching Documents
+
+``` python
+store.add_texts(
+    ["policy text", "claims document"],
+    metadatas=[{"id": "1"}, {"id": "2"}],
+)
+
+results = store.similarity_search("how to file a claim", k=3)
+
+for r in results:
+    print(r["score"], r["text"])
+```
+
+------------------------------------------------------------------------
+
+### Switching Backends
+
+Changing databases requires only updating the factory call:
+
+``` python
+store = get_vector_store(
+    "pgvector",
+    connection_url="postgresql://...",
+    table_name="documents",
+    embedding_dim=1536,
+)
+```
+
+No application-level retrieval logic changes are required.
+
+------------------------------------------------------------------------
+
+### Design Principles
+
+Vector store adapters in this SDK follow these rules:
+
+-   backend-agnostic application code
+-   no LangChain dependency in the core layer
+-   connection handling encapsulated per adapter
+-   telemetry hooks optional
+-   configuration centralized via SDK modules
+-   heavy drivers added only via optional extras
