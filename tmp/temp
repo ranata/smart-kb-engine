@@ -1,57 +1,58 @@
-# from dotenv import load_dotenv
-import os
-from azure.identity import ManagedIdentityCredential
-from azure.keyvault.secrets import SecretClient
+import configIA
+import time
+import jwt  # PyJWT library
+import requests
+import json
+from sc_idp_token_enc import encrypt_sc_idp_token
+import logging
 
+logger = logging.getLogger("ragBackend.get_token")
 
-class configure:
-    def __init__(self):
+def get_token_from_sc_idp():
+    start = time.time()
+    config = configIA.configure()
+    jwt_private_key = config.jwt_private_key
+    # Define endpoint and client id
+    authn_endpoint = config.authn_endpoint
+    client_id = config.client_id
 
-        #### version tag
-        self.version_tag = "v10"
+    # Prepare timestamp
+    current_timestamp = time.time()
 
-        #### database and data related
+    # Set payload headers
+    headers = {
+        'alg': 'RS256',
+        'typ': 'JWT'
+    }
 
-        self.chunk_size = 2000
-        self.embd_dimension_size = 1024
+    # Set payload for JWT
+    jwt_payload = {
+        "aud": authn_endpoint,
+        "iss": client_id,
+        "sub": client_id,
+        "exp": current_timestamp + 60 * 30,
+        "iat": current_timestamp,
+        "jti": str(current_timestamp)
+    }
 
-        self.memory_vector_db_name = f'az_cai.memory_table_tpc_{self.version_tag}'
-        self.base_vector_db_name = f'az_cai.vector_db_base_{self.version_tag}_{self.embd_dimension_size}_{self.chunk_size}'
-        self.meta_data_db_name = f'az_cai.vector_db_meta_{self.version_tag}'
-        self.db_conn_str = self.get_secret_from_keyvault("CONNSTR")
-
-        ### model related
-
-        self.llm_retries = 3
-
-        # self.LLM_model_name = 'databricks/credit-gpt41'
-        self.LLM_model_name = 'databricks/credit-gpt4o'
-        self.embedding_model_name = 'databricks/credit-gtelarge'
-
-        self.jwt_private_key = self.get_secret_from_keyvault("jwt-private-key")
-        self.authn_endpoint = "https://sit-authn.idp.global.standardchartered.com/ns03/realms/internal-system/protocol/openid-connect/token"
-        self.client_id = "credit_advanced_insights-gbl-sys"
-
-        self.url_dict = {"databricks/credit-gpt4o": "https://gateway.aifactoryuk.dev.azure.scbdev.net/v1/chat/completions",
-                         "databricks/credit-gpt41": "https://gateway.aifactoryuk.dev.azure.scbdev.net/v1/chat/completions",
-                         "databricks/credit-text3large": "https://gateway.aifactoryuk.dev.azure.scbdev.net/v1/embeddings",
-                         "databricks/credit-gtelarge": "https://gateway.aifactoryuk.dev.azure.scbdev.net/v1/embeddings"
-                         }
-
-        # time out for response
-        self.time_out_thresh = 48
-        self.cert_path = "/python_svc/ssl_key/ia_rag_cai_pvt_dns_dev_azure_scbdev_net_17_00_12_E1_FA_7E_5F_B3_99_B1_A4_77_B2_00_01_00_12_E1_FA.crt"
-        self.key_path = "/python_svc/ssl_key/ia-rag-2025.key"
-    def get_secret_from_keyvault(self, secret_name):
-        keyvault_name = "sckv-0cai-pvt-d-ukso"  # get dynamically from env variables once it's working # os.getenv('AZ_APP_KV')
-        keyvault_url = f'https://{keyvault_name}.vault.azure.net/'  # 'https://sckv-cai-pvt-dn-ukso.vault.azure.net/'
-        client_id = "c785cbab-c952-4c8f-ae21-ffc83568054a"
-        credential = ManagedIdentityCredential(client_id=client_id)
-        client = SecretClient(vault_url=keyvault_url, credential=credential)
-        secret_value = client.get_secret(secret_name).value.encode('utf-8').decode('unicode_escape')
-        return secret_value
-
-
-
-
-
+    # Generate JWT
+    signed_token = jwt.encode(jwt_payload, jwt_private_key, algorithm="RS256", headers=headers)
+    # print(signed_token)
+    signed_token = signed_token.decode('utf-8') if type(signed_token)==type(bytes()) else signed_token
+    # print(signed_token)
+    logger.debug(f"Generated signed JWT | duration={time.time() - start:.2f}s")
+    start = time.time()
+    # Authenticate and get access token
+    auth_payload = f'grant_type=client_credentials&client_id={client_id}&client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer&client_assertion={signed_token}'
+    headers = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    response = requests.request("POST", authn_endpoint, headers=headers, data=auth_payload, verify=False)
+    logger.debug(f"Obtained SC-IDP token | duration={time.time() - start:.2f}s")
+    start = time.time()
+    response_dict = json.loads(response.text)
+    logger.debug(f"Token expires in {response_dict['expires_in']}s")
+    access_token = response_dict['access_token']
+    encrypt_sc_idp_token(access_token)
+    logger.debug(f"Encrypted SC-IDP token | duration={time.time() - start:.2f}s")
+    return access_token
