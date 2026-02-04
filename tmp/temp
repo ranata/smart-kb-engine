@@ -1,87 +1,57 @@
-## 📚 Vector Stores & Retrieval
+# from dotenv import load_dotenv
+import os
+from azure.identity import ManagedIdentityCredential
+from azure.keyvault.secrets import SecretClient
 
-This SDK provides a standardized abstraction for vector databases used
-in retrieval-augmented generation (RAG).
 
-Applications interact with vector stores through a single factory API:
+class configure:
+    def __init__(self):
 
-``` python
-from d51864_genai import get_vector_store
-```
+        #### version tag
+        self.version_tag = "v10"
 
-This avoids coupling application code to a specific backend and allows
-migration between systems with minimal changes.
+        #### database and data related
 
-------------------------------------------------------------------------
+        self.chunk_size = 2000
+        self.embd_dimension_size = 1024
 
-### Supported Backends
+        self.memory_vector_db_name = f'az_cai.memory_table_tpc_{self.version_tag}'
+        self.base_vector_db_name = f'az_cai.vector_db_base_{self.version_tag}_{self.embd_dimension_size}_{self.chunk_size}'
+        self.meta_data_db_name = f'az_cai.vector_db_meta_{self.version_tag}'
+        self.db_conn_str = self.get_secret_from_keyvault("CONNSTR")
 
-  Backend                      Status           Intended Use
-  ---------------------------- ---------------- ---------------------
-  In-Memory                    Implemented   Dev / tests / CI
-  PGVector (Postgres)          Skeleton      Production
-  Elasticsearch / OpenSearch   Skeleton      Production
-  Azure SQL                    Skeleton      Production
-  FAISS                        Skeleton      Local / power users
+        ### model related
 
-Skeleton backends define the contract and configuration surface but do
-not include database drivers yet.
+        self.llm_retries = 3
 
-------------------------------------------------------------------------
+        # self.LLM_model_name = 'databricks/credit-gpt41'
+        self.LLM_model_name = 'databricks/credit-gpt4o'
+        self.embedding_model_name = 'databricks/credit-gtelarge'
 
-### Creating a Vector Store
+        self.jwt_private_key = self.get_secret_from_keyvault("jwt-private-key")
+        self.authn_endpoint = "https://sit-authn.idp.global.standardchartered.com/ns03/realms/internal-system/protocol/openid-connect/token"
+        self.client_id = "credit_advanced_insights-gbl-sys"
 
-``` python
-from d51864_genai import get_vector_store
+        self.url_dict = {"databricks/credit-gpt4o": "https://gateway.aifactoryuk.dev.azure.scbdev.net/v1/chat/completions",
+                         "databricks/credit-gpt41": "https://gateway.aifactoryuk.dev.azure.scbdev.net/v1/chat/completions",
+                         "databricks/credit-text3large": "https://gateway.aifactoryuk.dev.azure.scbdev.net/v1/embeddings",
+                         "databricks/credit-gtelarge": "https://gateway.aifactoryuk.dev.azure.scbdev.net/v1/embeddings"
+                         }
 
-store = get_vector_store(
-    "inmemory",
-    embedding_fn=my_embedding_fn,
-)
-```
+        # time out for response
+        self.time_out_thresh = 48
+        self.cert_path = "/python_svc/ssl_key/ia_rag_cai_pvt_dns_dev_azure_scbdev_net_17_00_12_E1_FA_7E_5F_B3_99_B1_A4_77_B2_00_01_00_12_E1_FA.crt"
+        self.key_path = "/python_svc/ssl_key/ia-rag-2025.key"
+    def get_secret_from_keyvault(self, secret_name):
+        keyvault_name = "sckv-0cai-pvt-d-ukso"  # get dynamically from env variables once it's working # os.getenv('AZ_APP_KV')
+        keyvault_url = f'https://{keyvault_name}.vault.azure.net/'  # 'https://sckv-cai-pvt-dn-ukso.vault.azure.net/'
+        client_id = "c785cbab-c952-4c8f-ae21-ffc83568054a"
+        credential = ManagedIdentityCredential(client_id=client_id)
+        client = SecretClient(vault_url=keyvault_url, credential=credential)
+        secret_value = client.get_secret(secret_name).value.encode('utf-8').decode('unicode_escape')
+        return secret_value
 
-------------------------------------------------------------------------
 
-### Adding and Searching Documents
 
-``` python
-store.add_texts(
-    ["policy text", "claims document"],
-    metadatas=[{"id": "1"}, {"id": "2"}],
-)
 
-results = store.similarity_search("how to file a claim", k=3)
 
-for r in results:
-    print(r["score"], r["text"])
-```
-
-------------------------------------------------------------------------
-
-### Switching Backends
-
-Changing databases requires only updating the factory call:
-
-``` python
-store = get_vector_store(
-    "pgvector",
-    connection_url="postgresql://...",
-    table_name="documents",
-    embedding_dim=1536,
-)
-```
-
-No application-level retrieval logic changes are required.
-
-------------------------------------------------------------------------
-
-### Design Principles
-
-Vector store adapters in this SDK follow these rules:
-
--   backend-agnostic application code
--   no LangChain dependency in the core layer
--   connection handling encapsulated per adapter
--   telemetry hooks optional
--   configuration centralized via SDK modules
--   heavy drivers added only via optional extras
