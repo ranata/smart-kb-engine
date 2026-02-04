@@ -1,1 +1,139 @@
-test
+import os
+from typing import Optional
+
+from d51864_genai.config.base import BaseConfigProvider
+from d51864_genai.config.types import AIFConfig
+from d51864_genai.config.constants import (
+    DEFAULT_VERSION_TAG,
+    DEFAULT_LLM_RETRIES,
+    DEFAULT_TIMEOUT_SECONDS,
+    DEFAULT_CHUNK_SIZE,
+    DEFAULT_EMBEDDING_DIM,
+    DEFAULT_TLS_CERT_PATH,
+    DEFAULT_TLS_KEY_PATH,
+)
+
+
+class AzureKeyVaultConfigProvider(BaseConfigProvider):
+    """
+    Loads config from environment variables and Azure Key Vault (secrets only).
+
+    Model names and endpoints MUST be supplied via env.
+    """
+
+    def __init__(
+        self,
+        keyvault_name: Optional[str] = None,
+        managed_identity_client_id: Optional[str] = None,
+    ):
+        self._keyvault_name = keyvault_name or os.getenv("GENAI_KEYVAULT_NAME")
+        self._client_id = managed_identity_client_id or os.getenv(
+            "GENAI_MANAGED_IDENTITY_CLIENT_ID"
+        )
+
+    # ----------------------------
+    # Public API
+    # ----------------------------
+
+    def load(self) -> AIFConfig:
+        secrets: dict[str, str] = {}
+
+        # ----------------------------
+        # Secrets from Azure KV
+        # ----------------------------
+
+        if self._keyvault_name:
+            client = self._kv_client()
+            secrets["db_conn_str"] = self._get_secret(client, "CONNSTR")
+            secrets["jwt_private_key"] = self._get_secret(client, "jwt-private-key")
+
+        # ----------------------------
+        # Required non-secret config
+        # ----------------------------
+
+        llm_model = self._require_env("GENAI_LLM_MODEL")
+        embedding_model = self._require_env("GENAI_EMBEDDING_MODEL")
+
+        llm_url = self._require_env("GENAI_LLM_URL")
+        embedding_url = self._require_env("GENAI_EMBEDDING_URL")
+
+        auth_endpoint = self._require_env("GENAI_AUTH_ENDPOINT")
+        client_id = self._require_env("GENAI_CLIENT_ID")
+
+        # ----------------------------
+        # Defaults via constants
+        # ----------------------------
+
+        llm_retries = int(os.getenv("GENAI_LLM_RETRIES", DEFAULT_LLM_RETRIES))
+        timeout_seconds = int(
+            os.getenv("GENAI_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS)
+        )
+
+        chunk_size = int(os.getenv("GENAI_CHUNK_SIZE", DEFAULT_CHUNK_SIZE))
+        embedding_dim = int(os.getenv("GENAI_EMBEDDING_DIM", DEFAULT_EMBEDDING_DIM))
+
+        version_tag = os.getenv("GENAI_VERSION_TAG", DEFAULT_VERSION_TAG)
+
+        cert_path = os.getenv("GENAI_TLS_CERT_PATH", DEFAULT_TLS_CERT_PATH)
+        key_path = os.getenv("GENAI_TLS_KEY_PATH", DEFAULT_TLS_KEY_PATH)
+
+        # ----------------------------
+        # Derived names
+        # ----------------------------
+
+        base_vector_table = (
+            f"az_cai.vector_db_base_{version_tag}_{embedding_dim}_{chunk_size}"
+        )
+        memory_table = f"az_cai.memory_table_tpc_{version_tag}"
+        metadata_table = f"az_cai.vector_db_meta_{version_tag}"
+
+        url_dict = {
+            llm_model: llm_url,
+            embedding_model: embedding_url,
+        }
+
+        return AIFConfig(
+            llm_model_name=llm_model,
+            embedding_model_name=embedding_model,
+            llm_retries=llm_retries,
+            url_dict=url_dict,
+            timeout_seconds=timeout_seconds,
+            chunk_size=chunk_size,
+            embedding_dim=embedding_dim,
+            base_vector_table=base_vector_table,
+            memory_table=memory_table,
+            metadata_table=metadata_table,
+            auth_endpoint=auth_endpoint,
+            client_id=client_id,
+            jwt_private_key=secrets.get("jwt_private_key"),
+            cert_path=cert_path,
+            key_path=key_path,
+            db_conn_str=secrets.get("db_conn_str"),
+        )
+
+    # ----------------------------
+    # Helpers
+    # ----------------------------
+
+    def _kv_client(self):
+        # Import lazily so Azure deps are optional until used
+        from azure.identity import ManagedIdentityCredential
+        from azure.keyvault.secrets import SecretClient
+
+        credential = ManagedIdentityCredential(client_id=self._client_id)
+        return SecretClient(
+            vault_url=f"https://{self._keyvault_name}.vault.azure.net/",
+            credential=credential,
+        )
+
+    def _get_secret(self, client, name: str) -> str:
+        return client.get_secret(name).value
+
+    def _require_env(self, key: str) -> str:
+        value = os.getenv(key)
+        if not value:
+            raise RuntimeError(
+                f"Missing required configuration: {key}. "
+                "Set it via environment variables."
+            )
+        return value
