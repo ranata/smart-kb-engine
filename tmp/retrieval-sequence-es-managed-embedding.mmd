@@ -1,0 +1,38 @@
+sequenceDiagram
+    autonumber
+    actor U as User / CA
+    participant UI as CIQ UI
+    participant IDP as SC IDP Gateway (SKE)
+    participant AO as AI Orchestration Service
+    participant GR as Guardrail Service (SKE)
+    participant RT as Retrieval Service
+    participant ES as Elasticsearch
+    box AI Factory (Cloud)
+      participant EMB as Embedding Endpoint
+      participant LLM as LLM Endpoint
+    end
+
+    U->>UI: Submit query
+    UI->>IDP: Authenticate + authorize
+    IDP-->>UI: Token / claims
+    UI->>AO: Query + user context
+    AO->>AO: Routing + query expansion
+    AO->>GR: Guardrail validation
+
+    alt Guardrail pass
+        GR-->>AO: Approved / sanitized query
+        AO->>RT: Retrieval request
+        RT->>ES: Native hybrid search
+        ES->>EMB: Internal embedding call (ES-managed)
+        EMB-->>ES: Embedding vector
+        ES-->>RT: Hybrid results
+        RT-->>AO: Retrieved context + metadata
+        AO->>LLM: Prompt for response generation
+        LLM-->>AO: Generated response
+        AO-->>UI: Final response + citations
+        UI-->>U: Render answer
+    else Guardrail fail
+        GR-->>AO: Block / policy violation
+        AO-->>UI: Safe fallback message
+        UI-->>U: Show policy-safe response
+    end
