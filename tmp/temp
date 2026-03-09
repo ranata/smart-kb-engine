@@ -1,10 +1,190 @@
-Here is what is happening:
+<mxfile host="app.diagrams.net" agent="GitHub Copilot" version="29.6.0">
+  <diagram name="Ingestion Pipeline" id="ingestion-pipeline-v1">
+    <mxGraphModel dx="1534" dy="778" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
 
-CRHS system which keeps metadata of policy documents (including filenet url of the document) publishes changes to Solace.
-We need a listner service that read these metadatchanges from Solace, gets the metadata file information, connects to CRHS bucket in minio to read the metadata file and stores the metdata in Potsgres.
-It then reads the filenet URL from metdata, connects to filenet, downloads and stores the document in minio CIQ bucket as raw files.
-The next step is to parse the raw files, chunk it and enrich metadata and store in feature store.
-This is then published to Elaticsearch (that was missing in the diagram) and vector index is created in elastic search.
-I want to do this entire orchestration using wither temporal or Airflow.
-Steps 2 and 3 will be in Java and 4 to 6 will be in python.
-Before you ceate a revised diagram, can you suggest what orchestrator should I use?
+        <!-- ══════════════════════════════════════════════════
+             SECTION LABEL: Source Systems
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="lbl_src" value="Source Systems" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontStyle=1;fontSize=13;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="60" y="48" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             SOURCE: CRHS
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="crhs" value="&lt;u&gt;&lt;b&gt;CRHS&lt;/b&gt;&lt;/u&gt;&lt;br/&gt;Credit policy meta data store" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="90" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             SOURCE: M7 Policy System
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="m7" value="&lt;u&gt;&lt;b&gt;M7 Policy System&lt;/b&gt;&lt;/u&gt;&lt;br/&gt;CCIB Credit policies/standards" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             SOURCE: SharePoint
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="sp" value="SharePoint&lt;br/&gt;(PPG, CUP, Guidance Note)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="380" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             CONNECTOR: SOLACE DOCUMENT LISTENER
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="solace" value="SOLACE&lt;br/&gt;DOCUMENT&lt;br/&gt;LISTENER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;fontSize=10;fontStyle=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="340" y="103" width="120" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             CONNECTOR: FILENET
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="filenet" value="FILENET" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;fontSize=11;fontStyle=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="340" y="257" width="120" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             MINIO OUTER CONTAINER
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="minio" value="&lt;font style=&apos;font-size:16px; font-weight:bold;&apos;&gt;MIN&lt;font color=&apos;#FF0000&apos;&gt;IO&lt;/font&gt;&lt;/font&gt;" style="swimlane;startSize=40;fillColor=#f5f5f5;strokeColor=#aaaaaa;strokeWidth=2;fontSize=14;swimlaneLine=1;horizontal=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="540" y="50" width="770" height="420" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             CRHS BUCKET (child of MinIO)
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="crhs_bucket" value="CRHS Bucket" style="swimlane;startSize=28;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;arcSize=4;" vertex="1" parent="minio">
+          <mxGeometry x="20" y="60" width="210" height="300" as="geometry" />
+        </mxCell>
+
+        <!-- Metadata cylinder inside CRHS Bucket -->
+        <mxCell id="metadata" value="Metadata" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#67AB9F;strokeColor=#006EAF;fontColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=bottom;direction=south;" vertex="1" parent="crhs_bucket">
+          <mxGeometry x="55" y="90" width="100" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             CIQ BUCKET (child of MinIO)
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="ciq_bucket" value="CIQ Bucket" style="swimlane;startSize=28;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;arcSize=4;" vertex="1" parent="minio">
+          <mxGeometry x="270" y="60" width="470" height="300" as="geometry" />
+        </mxCell>
+
+        <!-- Raw files (inside CIQ Bucket) -->
+        <mxCell id="raw_files" value="Raw files" style="shape=mxgraph.cisco.servers.standard_server;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontColor=#333333;fontSize=10;" vertex="1" parent="ciq_bucket">
+          <mxGeometry x="35" y="80" width="65" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- Delta table (inside CIQ Bucket) -->
+        <mxCell id="delta_table" value="Delta table" style="shape=mxgraph.cisco.servers.standard_server;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontColor=#333333;fontSize=10;" vertex="1" parent="ciq_bucket">
+          <mxGeometry x="195" y="80" width="65" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- Feature store (inside CIQ Bucket) -->
+        <mxCell id="feature_store" value="Feature store" style="shape=mxgraph.cisco.servers.standard_server;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontColor=#333333;fontSize=10;" vertex="1" parent="ciq_bucket">
+          <mxGeometry x="358" y="80" width="65" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Raw files → Delta table (inside CIQ Bucket) -->
+        <mxCell id="e_raw_delta" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="raw_files" target="delta_table" parent="ciq_bucket">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Delta table → Feature store (inside CIQ Bucket) -->
+        <mxCell id="e_delta_feature" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="delta_table" target="feature_store" parent="ciq_bucket">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             DOWNSTREAM COMPONENTS
+        ══════════════════════════════════════════════════ -->
+
+        <!-- Management tables -->
+        <mxCell id="mgmt_tables" value="Management tables" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="160" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Embedding table -->
+        <mxCell id="embed_table" value="Embedding table" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="300" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             EDGES: Source → Connectors
+        ══════════════════════════════════════════════════ -->
+
+        <!-- CRHS → SOLACE DOCUMENT LISTENER -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="crhs" target="solace" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- M7 Policy System → FILENET -->
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="m7" target="filenet" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             EDGES: Connectors → MinIO buckets
+        ══════════════════════════════════════════════════ -->
+
+        <!-- SOLACE DOCUMENT LISTENER → CRHS Bucket (Metadata) -->
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="solace" target="metadata" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- FILENET → CIQ Bucket (Raw files) -->
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="filenet" target="raw_files" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SharePoint → CIQ Bucket (Raw files) via Manual upload -->
+        <mxCell id="e5" value="Manual upload" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;fontStyle=2;fontSize=10;" edge="1" source="sp" target="raw_files" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             EDGES: Feature store → Downstream
+        ══════════════════════════════════════════════════ -->
+
+        <!-- Feature store → Management tables -->
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" source="feature_store" target="mgmt_tables" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Feature store → Embedding table -->
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" source="feature_store" target="embed_table" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             SECTION LABELS
+        ══════════════════════════════════════════════════ -->
+
+        <!-- Ingestion label -->
+        <mxCell id="lbl_ingestion" value="Ingestion" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontStyle=1;fontSize=13;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="200" y="500" width="120" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Downstream label -->
+        <mxCell id="lbl_downstream" value="Processing &amp; Storage" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontStyle=1;fontSize=13;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="100" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════
+             DIVIDER LINE (visual separator)
+        ══════════════════════════════════════════════════ -->
+        <mxCell id="divider" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#aaaaaa;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry x="530" y="50" width="10" height="420" as="geometry">
+            <Array as="points">
+              <mxPoint x="530" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
