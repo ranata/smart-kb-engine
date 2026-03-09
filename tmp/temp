@@ -1,7 +1,10 @@
-Hi Mitra,
+Here is what is happening:
 
-My core experience is in AI Engineering and AI solution delivery, and my role here was defined around that. I had agreed to support the CreditIQ SI Chapter 3 as an interim activity alongside the AI work.
-
-Taking end-to-end ownership of SI deliverables for projects where I do not have functional or architectural context is outside my area of expertise and not aligned with the role I joined for.
-
-To meet the 27th Feb timeline effectively, the inputs will need to come from the respective domain owners, and I can help in structuring and consolidating the artefact where required.
+CRHS system which keeps metadata of policy documents (including filenet url of the document) publishes changes to Solace.
+We need a listner service that read these metadatchanges from Solace, gets the metadata file information, connects to CRHS bucket in minio to read the metadata file and stores the metdata in Potsgres.
+It then reads the filenet URL from metdata, connects to filenet, downloads and stores the document in minio CIQ bucket as raw files.
+The next step is to parse the raw files, chunk it and enrich metadata and store in feature store.
+This is then published to Elaticsearch (that was missing in the diagram) and vector index is created in elastic search.
+I want to do this entire orchestration using wither temporal or Airflow.
+Steps 2 and 3 will be in Java and 4 to 6 will be in python.
+Before you ceate a revised diagram, can you suggest what orchestrator should I use?
